@@ -1,0 +1,38 @@
+% ---------------------------------------------------------------
+%  Copy this file, rename it, and start typing.
+%  Compile with:   pdflatex notes-template.tex
+%  messynotes.sty must sit in the same folder.
+% ---------------------------------------------------------------
+\documentclass[11pt]{article}
+\usepackage[dotgrid]{messynotes}   % or [linegrid], or no option for blank paper
+
+\begin{document}
+
+\notehead[\today]{Title of today's notes}
+
+% A blank line starts a new line of notes. That's the whole idea.
+
+\headu{First thing}
+
+Some claim I want to remember.
+
+\begin{ind}
+  a sub-thought, indented
+  \bul{a bullet}
+  \bul[1]{a bullet one step deeper}
+  \arr{and a follow-on}
+\end{ind}
+
+\lead{Thm} statement of the theorem.
+
+\lead{Pf} the argument, ending with a tombstone. \quad\tomb
+
+\eq{\text{display math, left-aligned, at the current indent}}
+
+\begin{ex}
+Worked example goes here.
+\end{ex}
+
+\qn{something I did not understand and should ask about}
+
+\end{document}

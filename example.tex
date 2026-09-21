@@ -1,0 +1,179 @@
+% Compile with:  pdflatex example.tex   (or lualatex example.tex)
+\documentclass[11pt]{article}
+\usepackage[dotgrid]{messynotes}
+
+\begin{document}
+
+\notehead[9/15/26]{Cook--Levin}
+
+\headu{Warmup: mapping reductions}
+
+\pt{3-COLOR $\le_p$ 4-COLOR}
+\pt{$G = (V,E) \longmapsto G' = \bigl(V \cup \{s\},\; E \cup \{(s,v) : v \in V\}\bigr)$}
+
+\pt{PALINDROME $\le_p$ 3-COLOR}
+\pt[2]{$x \longmapsto$ 3-clique if palindrome, 4-clique otherwise.}
+
+\pt{3-COLOR $\le_p$ HALT}
+
+\imp{\lead{Fact} 3-COLOR is NP-complete}
+
+\lead{Corollary} if 3-COLOR $\le_p$ PALINDROME $\Rightarrow$ P${}={}$NP
+
+\lead{Pf} to show P${}={}$NP, exhibit a poly-time algorithm for arbitrary
+$L \in$ NP under the assumed reduction
+
+\begin{ind}
+  Fixing $L \in$ NP $\Rightarrow \exists$ poly-time $R_{L \to 3\text{COL}}$
+  by \amber{\ding{72}}
+
+  Given instance $x$ to $L$:
+
+  \bul{run $y \leftarrow R_{L \to 3\text{COL}}(x)$}
+  \bul{run $z \leftarrow R_{3\text{COL} \to \text{PAL}}(y)$ \aside{by assumption}}
+  \bul{solve $z \in$ PALINDROME}
+  \bul[1]{if yes, accept}
+  \bul[1]{if no, reject \quad\tomb}
+\end{ind}
+
+\headu{Cook--Levin Theorem}
+
+SAT is NP-complete.
+
+\arr{\key{Karp} showed an incredibly diverse set of problems $\Pi$ with
+     SAT $\le_p \Pi$.}
+
+\gap
+
+\headbar{SAT: Boolean satisfiability}
+
+Boolean formula in conjunctive normal form
+
+\arr{$n$ boolean variables $x_1,\dots,x_n$}
+\pt{$m$ clauses $c_j = (\ell_{j_1} \vee \ell_{j_2} \vee \cdots \vee \ell_{j_k})$}
+\arr[1]{$m = \mathrm{poly}(n)$}
+\pt[3]{$\ell_i \in \{x_i, \neg x_i\}$}
+
+\eq{\phi \;=\; \bigwedge_{j=1}^{m} c_j}
+
+\lead{SAT} does there exist an assignment $a \in \{0,1\}^n$
+s.t.\ $x = a \Rightarrow \phi(a) = 1$?
+
+\lead{$k$-SAT} each clause has width at most $k$.
+
+\begin{ex}[Example: 4-SAT $\le_p$ 3-SAT]
+Given a 4-CNF formula $\phi$, construct a 3-CNF formula $\psi$ such that
+$\phi$ is satisfiable $\iff$ $\psi$ is satisfiable.
+
+\pt{For each $c_j = (\ell_1 \vee \ell_2 \vee \ell_3 \vee \ell_4)$ in $\phi$,}
+\pt[2]{$c_{j,+} = (\ell_1 \vee \ell_2 \vee y_j)$}
+\pt[2]{$c_{j,-} = (\ell_3 \vee \ell_4 \vee \neg y_j)$ \aside{for brand new $y_j$}}
+
+\eq[2]{\psi \;=\; \bigwedge_{j=1}^m c_{j,+} \wedge c_{j,-} \qquad \tomb}
+\end{ex}
+
+\sep
+
+\headbox{Loose ends}
+
+\begin{cols}{2}
+\subhead{Still unclear}
+\qn{why does the $y_j$ trick preserve satisfiability in both directions?}
+\qn{is the $k \to 3$ blowup really linear?}
+\nextcol
+\subhead{To do}
+\yes{reread Sipser 7.4}
+\no{write up the $k$-SAT induction}
+\bang{pset due Friday}
+\end{cols}
+
+\begin{quo}[Sipser, Thm 7.37]
+SAT is NP-complete. The proof simulates a nondeterministic polynomial-time
+machine with a tableau of configurations.
+\end{quo}
+
+\clearpage
+\notehead[ref]{Everything else in the kit}
+
+\headu{Bullets}
+\bul{\texttt{\char`\\bul} -- plain dot}
+\dash{\texttt{\char`\\dash} -- en dash}
+\arr{\texttt{\char`\\arr} -- the ``sub-point'' arrow}
+\imp{\texttt{\char`\\imp} -- star, for things that matter}
+\qn{\texttt{\char`\\qn} -- something I did not follow}
+\bang{\texttt{\char`\\bang} -- warning to future me}
+\yes{\texttt{\char`\\yes} \quad and \quad \texttt{\char`\\no}}
+\no{each takes an optional depth: \texttt{\char`\\bul[2]\{...\}}}
+
+\newpoint{\hmm}{\textcolor{mnviolet}{$\rightsquigarrow$}}
+\hmm{roll your own with \texttt{\char`\\newpoint\{\char`\\hmm\}\{$\rightsquigarrow$\}}}
+
+\headu{Headings}
+\head{\texttt{\char`\\head} -- plain}
+\headu{\texttt{\char`\\headu} -- ruled}
+\headbox{\texttt{\char`\\headbox} -- boxed}
+\headbar{\texttt{\char`\\headbar} -- filled bar}
+\subhead{\texttt{\char`\\subhead} -- small}
+
+\headu{Panels}
+
+\begin{defn}
+A language $L$ is \key{NP-hard} if every $L' \in$ NP reduces to it in
+polynomial time.
+\end{defn}
+
+\begin{idea}
+Every panel takes an optional label: \texttt{\char`\\begin\{idea\}[My label]}.
+Pass \texttt{[]} to drop the label entirely.
+\end{idea}
+
+\begin{warn}
+The reduction has to run in polynomial time \alert{in the size of the
+original input}, not the size of its output.
+\end{warn}
+
+\begin{outline}[Plain outlined box]
+\texttt{outline} and \texttt{shade} are the unlabelled generics.
+\end{outline}
+
+\begin{shade}[]
+Make your own: \texttt{\char`\\newshadebox\{hmm\}\{mnviolet\}\{Hmm\}} or
+\texttt{\char`\\newoutlinebox\{...\}}.
+\end{shade}
+
+\headu{Side by side}
+
+\sbs[0.55]{%
+  \subhead{Wider left}
+  \texttt{\char`\\sbs[0.55]\{left\}\{right\}} splits two blocks, optionally
+  unevenly.
+}{%
+  \subhead{Narrower right}
+  \bul{bullets work inside}
+  \bul{so do boxes and math}
+}
+
+\begin{cols}{3}
+\subhead{one}
+$\sum_{i} a_i$
+\nextcol
+\subhead{two}
+$\bigcup_{j} B_j$
+\nextcol
+\subhead{three}
+$\vdash \preceq \ltimes$
+\end{cols}
+
+\headu{Emphasis}
+
+\pt[0]{\key{key term}, \alert{alert}, \hl{highlighted}, \aside{muted aside},
+\ul{underlined}, \blue{blue} \teal{teal} \red{red} \amber{amber}
+\violet{violet} \gray{gray}}
+
+\sep
+
+\aside{\texttt{\char`\\sep} draws that rule; \texttt{\char`\\gap} adds blank
+vertical space; \texttt{\char`\\eq\{...\}} sets left-aligned display math at the
+current indent.}
+
+\end{document}

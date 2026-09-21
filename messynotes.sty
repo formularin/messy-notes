@@ -1,0 +1,305 @@
+%%% ==================================================================
+%%%  messynotes.sty  --  lightweight macros for messy, first-draft
+%%%                      handwritten-feeling math notes.
+%%%
+%%%  Usage:  \documentclass[11pt]{article}
+%%%          \usepackage{messynotes}          % plain paper
+%%%          \usepackage[dotgrid]{messynotes} % dot-grid paper
+%%%          \usepackage[linegrid]{messynotes}% ruled paper
+%%%
+%%%  Compiles with pdflatex, xelatex or lualatex.
+%%%  pdflatex is the recommended engine.
+%%% ==================================================================
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{messynotes}[2026/09/21 v1.0 messy first-draft note macros]
+
+% ---------------------------------------------------------------- options
+\newif\ifmn@dots  \mn@dotsfalse
+\newif\ifmn@lines \mn@linesfalse
+\DeclareOption{dotgrid}{\mn@dotstrue\mn@linesfalse}
+\DeclareOption{linegrid}{\mn@linestrue\mn@dotsfalse}
+\DeclareOption{plainpaper}{\mn@dotsfalse\mn@linesfalse}
+\ProcessOptions\relax
+
+% ---------------------------------------------------------------- fonts
+% Fira Sans everywhere.  Math is Fira Math under lualatex/xelatex and
+% newtxsf (a sans math font) under pdflatex, so either engine works.
+\RequirePackage{iftex}
+\ifPDFTeX
+  \RequirePackage[T1]{fontenc}
+  \RequirePackage[utf8]{inputenc}
+  \RequirePackage{newtxsf}
+  \RequirePackage[sfdefault,lining]{FiraSans}
+  \RequirePackage[scaled=0.85]{FiraMono}
+\else
+  \RequirePackage{fontspec}
+  \RequirePackage{unicode-math}
+  \defaultfontfeatures{Extension=.otf,Numbers=Lining}
+  \setmainfont{FiraSans}[UprightFont=*-Regular,ItalicFont=*-Italic,
+      BoldFont=*-SemiBold,BoldItalicFont=*-SemiBoldItalic]
+  \setsansfont{FiraSans}[UprightFont=*-Regular,ItalicFont=*-Italic,
+      BoldFont=*-SemiBold,BoldItalicFont=*-SemiBoldItalic]
+  \setmonofont{FiraMono}[UprightFont=*-Regular,ItalicFont=*-Oblique,
+      BoldFont=*-Bold,Scale=0.85]
+  % Lete Sans Math: a sans math font with complete symbol coverage.
+  % (Fira Math pairs better visually but is missing \bigwedge, \bigcup,
+  %  \vdash, \preceq, ... which you will hit in real notes.)
+  \setmathfont{LeteSansMath.otf}[Scale=0.93]
+\fi
+
+% ---------------------------------------------------------------- packages
+\RequirePackage{geometry}
+\RequirePackage{xcolor}
+\RequirePackage{graphicx}
+\RequirePackage{etoolbox}
+\RequirePackage{ragged2e}
+\RequirePackage{pifont}
+\RequirePackage[normalem]{ulem}
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta}
+\RequirePackage[most]{tcolorbox}
+\RequirePackage{eso-pic}
+\RequirePackage{fancyhdr}
+\RequirePackage{amsmath}
+
+\geometry{letterpaper,left=0.85in,right=0.85in,top=0.85in,bottom=0.95in}
+
+% ---------------------------------------------------------------- palette
+% Rename these if you want a different look; everything else follows.
+\definecolor{mnink}{HTML}{1C1C21}   % body text
+\definecolor{mngray}{HTML}{6E6E7A}  % muted / asides
+\definecolor{mnblue}{HTML}{2F49C9}  % primary accent
+\definecolor{mnteal}{HTML}{0E8A70}
+\definecolor{mnred}{HTML}{CC2436}
+\definecolor{mnamber}{HTML}{C98A00}
+\definecolor{mnviolet}{HTML}{7B36B5}
+\definecolor{mnhl}{HTML}{FFE98A}    % highlighter
+\definecolor{mngrid}{HTML}{D8D8E0}  % dot/line paper
+\colorlet{mnaccent}{mnblue}         % "the" accent colour
+
+\newcommand{\blue}[1]{\textcolor{mnblue}{#1}}
+\newcommand{\teal}[1]{\textcolor{mnteal}{#1}}
+\newcommand{\red}[1]{\textcolor{mnred}{#1}}
+\newcommand{\amber}[1]{\textcolor{mnamber}{#1}}
+\newcommand{\violet}[1]{\textcolor{mnviolet}{#1}}
+\newcommand{\gray}[1]{\textcolor{mngray}{#1}}
+
+% ---------------------------------------------------------------- page feel
+\AtBeginDocument{%
+  \color{mnink}%
+  \RaggedRight
+  \setlength{\parindent}{0pt}%
+  \setlength{\parskip}{0.40\baselineskip plus 2pt minus 1pt}%
+  \setlength{\emergencystretch}{3em}%
+}
+\linespread{1.08}
+
+\fancypagestyle{messy}{%
+  \fancyhf{}\renewcommand{\headrulewidth}{0pt}%
+  \fancyfoot[R]{\color{mngray}\scriptsize\thepage}}
+\AtBeginDocument{\pagestyle{messy}}
+
+% ------------------------------------------------- paper background (option)
+\ifmn@dots
+  \AddToShipoutPictureBG{\AtPageLowerLeft{%
+    \begin{tikzpicture}[overlay]
+      \foreach \x in {0.5,1.0,...,21.5}{\foreach \y in {0.5,1.0,...,28.0}{%
+        \fill[mngrid] (\x,\y) circle (0.4pt);}}
+    \end{tikzpicture}}}
+\fi
+\ifmn@lines
+  \AddToShipoutPictureBG{\AtPageLowerLeft{%
+    \begin{tikzpicture}[overlay]
+      \foreach \y in {1.0,1.6,...,27.4}{%
+        \draw[mngrid,line width=0.3pt] (1.0,\y) -- (20.6,\y);}
+    \end{tikzpicture}}}
+\fi
+
+% ---------------------------------------------------------------- lengths
+\newlength{\mnstep}   \setlength{\mnstep}{1.5em}   % one indent step
+\newlength{\mnhang}   \setlength{\mnhang}{1.15em}  % marker gutter
+\newlength{\mncolgap} \setlength{\mncolgap}{1.2em} % gap between columns
+\newlength{\mn@cur}   \setlength{\mn@cur}{0pt}     % current indent (tracked)
+\newlength{\mn@tmp}
+\newlength{\mn@tmpb}
+\newlength{\mn@colw}
+% width still available at the current indentation
+\newcommand{\mnw}{\dimexpr\linewidth-\mn@cur\relax}
+
+% ---------------------------------------------------------------- indentation
+% \begin{ind} ... \end{ind}   indent a block one step (nestable)
+% \begin{ind}[3] ...          ... or three steps
+\newenvironment{ind}[1][1]{%
+  \par\begingroup
+  \advance\leftskip by \dimexpr#1\mnstep\relax
+  \advance\mn@cur   by \dimexpr#1\mnstep\relax
+  \ignorespaces}{\par\endgroup\ignorespacesafterend}
+
+% \pt{text}      one line, shifted in one step
+% \pt[3]{text}   ... or three steps  (\pt[0]{...} = no shift)
+\newcommand{\pt}[2][1]{%
+  \par\begingroup
+  \advance\leftskip by \dimexpr#1\mnstep\relax
+  \advance\mn@cur   by \dimexpr#1\mnstep\relax
+  \noindent\ignorespaces#2\par\endgroup}
+
+% ---------------------------------------------------------------- bullets
+% internal: #1 extra levels, #2 marker, #3 text.
+% The marker gutter is \mnhang, but widens automatically for fat markers.
+\newsavebox{\mn@box}
+\newcommand{\mn@point}[3]{%
+  \par\begingroup
+  \sbox{\mn@box}{#2}%
+  \ifdim\wd\mn@box<\mnhang
+    \setlength{\mn@tmp}{\mnhang}%
+  \else
+    \setlength{\mn@tmp}{\dimexpr\wd\mn@box+0.45em\relax}%
+  \fi
+  \advance\leftskip by \dimexpr#1\mnstep\relax \advance\leftskip by \mn@tmp
+  \advance\mn@cur   by \dimexpr#1\mnstep\relax \advance\mn@cur   by \mn@tmp
+  \noindent\llap{\makebox[\mn@tmp][l]{\usebox{\mn@box}}}\ignorespaces#3\par
+  \endgroup}
+
+% \newpoint{\name}{marker}  ->  \name[level]{text}
+\newcommand{\newpoint}[2]{\newcommand{#1}[2][0]{\mn@point{##1}{#2}{##2}}}
+
+\newcommand{\arrow}{\raisebox{0.1ex}{\tikz[baseline]{%
+  \draw[mnaccent,line width=0.5pt,-{Stealth[length=1.1mm,width=1.0mm]}]
+    (0,1.15ex) -- (0,0.18ex) -- (0.9ex,0.18ex);}}}
+\newcommand{\tomb}{\tikz[baseline]{%
+  \draw[mnink,line width=0.5pt] (0,0) rectangle (1.05ex,1.35ex);}}
+\newcommand{\cmark}{\textcolor{mnteal}{\ding{51}}}
+\newcommand{\xmark}{\textcolor{mnred}{\ding{55}}}
+
+\newpoint{\bul}  {\textcolor{mnaccent}{\raisebox{0.15ex}{\tiny\ding{108}}}}
+\newpoint{\dash} {\textcolor{mngray}{\textendash}}
+\newpoint{\arr}  {\arrow}
+\newpoint{\imp}  {\textcolor{mnamber}{\small\ding{72}}}
+\newpoint{\qn}   {\textcolor{mnviolet}{\bfseries ?}}
+\newpoint{\bang} {\textcolor{mnred}{\bfseries !}}
+\newpoint{\yes}  {\cmark}
+\newpoint{\no}   {\xmark}
+
+% ---------------------------------------------------------------- headings
+\newcommand{\mn@above}{\addvspace{0.9\baselineskip}}
+\newcommand{\mn@below}{\par\addvspace{0.15\baselineskip}}
+
+% big plain heading
+\newcommand{\head}[1]{\par\mn@above
+  \noindent{\color{mnaccent}\bfseries\large #1}\mn@below}
+
+% heading with a coloured rule under the words
+\newcommand{\headu}[1]{\par\mn@above
+  \noindent{\color{mnaccent}\bfseries\large
+    \setlength{\ULdepth}{0.55ex}\renewcommand{\ULthickness}{1.1pt}%
+    \uline{\textcolor{mnink}{#1}}}\mn@below}
+
+% heading in a tight outlined box
+\newcommand{\headbox}[1]{\par\mn@above
+  \noindent\setlength{\fboxsep}{4pt}%
+  \fcolorbox{mnaccent}{white}{\color{mnink}\bfseries\large #1}\mn@below}
+
+% heading as a full-width filled bar
+\newcommand{\headbar}[1]{\par\mn@above
+  \noindent\setlength{\fboxsep}{5pt}%
+  \colorbox{mnaccent}{\parbox{\dimexpr\mnw-2\fboxsep\relax}%
+    {\color{white}\bfseries\large #1}}\mn@below}
+
+% smaller sub-heading
+\newcommand{\subhead}[1]{\par\addvspace{0.5\baselineskip}%
+  \noindent{\color{mnteal}\bfseries #1}\par\addvspace{0.1\baselineskip}}
+
+% title block for the top of a page:  \notehead[9/15/26]{Cook-Levin}
+% The date column is measured, not fixed, so the date stays on one line
+% unless it is long enough to crowd the title (capped at \mndatemax).
+\newcommand{\mndatemax}{0.4}
+\newcommand{\notehead}[2][]{%
+  \par\noindent
+  \setlength{\mn@tmpb}{\mnw}%
+  \ifblank{#1}{%
+    \begin{minipage}[b]{\mn@tmpb}\RaggedRight
+      {\color{mnaccent}\bfseries\LARGE #2}\end{minipage}%
+  }{%
+    \sbox{\mn@box}{\color{mngray}\small #1}%
+    \setlength{\mn@tmp}{\wd\mn@box}%
+    \ifdim\mn@tmp>\mndatemax\mn@tmpb \setlength{\mn@tmp}{\mndatemax\mn@tmpb}\fi
+    \begin{minipage}[b]{\dimexpr\mn@tmpb-\mn@tmp-1em\relax}\RaggedRight
+      {\color{mnaccent}\bfseries\LARGE #2}\end{minipage}%
+    \hfill
+    \begin{minipage}[b]{\mn@tmp}\raggedleft{\color{mngray}\small #1}\end{minipage}%
+  }%
+  \par\vspace{2pt}\noindent{\color{mnaccent}\rule{\mn@tmpb}{1.4pt}}%
+  \par\addvspace{0.5\baselineskip}}
+
+% ---------------------------------------------------------------- inline bits
+\newcommand{\ul}[1]{{\setlength{\ULdepth}{0.45ex}%
+  \renewcommand{\ULthickness}{0.7pt}\uline{#1}}}
+% underlined lead-in word, as in "Thm: ..."   ->  \lead{Thm} text
+\newcommand{\lead}[1]{{\color{mnaccent}\ul{\textbf{#1}}}:\ \ignorespaces}
+\newcommand{\key}[1]{\textbf{\textcolor{mnaccent}{#1}}}
+\newcommand{\alert}[1]{\textbf{\textcolor{mnred}{#1}}}
+\newcommand{\hl}[1]{{\setlength{\fboxsep}{1pt}\colorbox{mnhl}{#1}}}
+\newcommand{\aside}[1]{{\color{mngray}\small #1}}
+
+% left-aligned display math sitting at the current indent
+% \eq{x = y}   or   \eq[2]{x = y}
+\newcommand{\eq}[2][1]{%
+  \par\addvspace{0.2\baselineskip}\begingroup
+  \advance\leftskip by \dimexpr#1\mnstep\relax
+  \advance\mn@cur   by \dimexpr#1\mnstep\relax
+  \noindent$\displaystyle #2$\par\endgroup\addvspace{0.2\baselineskip}}
+
+% vertical air and separators
+\newcommand{\gap}[1][1]{\par\vspace{#1\baselineskip}}
+\newcommand{\sep}{\par\addvspace{0.7\baselineskip}%
+  \noindent{\color{mngrid}\rule{\mnw}{0.8pt}}\par\addvspace{0.4\baselineskip}}
+
+% ---------------------------------------------------------------- side by side
+% \sbs{left}{right}          two equal columns
+% \sbs[0.65]{left}{right}    left column takes 65% of the width
+\newcommand{\sbs}[3][0.5]{%
+  \par\addvspace{0.3\baselineskip}%
+  \setlength{\mn@tmp}{\dimexpr\mnw-\mncolgap\relax}%
+  \noindent\begin{minipage}[t]{\dimexpr#1\mn@tmp\relax}\RaggedRight #2\end{minipage}%
+  \hspace{\mncolgap}%
+  \begin{minipage}[t]{\dimexpr\mn@tmp-#1\mn@tmp\relax}\RaggedRight #3\end{minipage}%
+  \par\addvspace{0.3\baselineskip}}
+
+% \begin{cols}{3} a \nextcol b \nextcol c \end{cols}   n equal columns
+\newenvironment{cols}[1]{%
+  \par\addvspace{0.3\baselineskip}%
+  \setlength{\mn@colw}{\dimexpr(\mnw-#1\mncolgap+\mncolgap)/#1\relax}%
+  \noindent\begin{minipage}[t]{\mn@colw}\RaggedRight\ignorespaces}%
+  {\end{minipage}\par\addvspace{0.3\baselineskip}}
+\newcommand{\nextcol}{\unskip\end{minipage}\hspace{\mncolgap}%
+  \begin{minipage}[t]{\mn@colw}\RaggedRight\ignorespaces}
+
+% ---------------------------------------------------------------- boxes
+\tcbset{mn@base/.style={
+  breakable, enhanced, sharp corners=downhill, arc=1.2mm,
+  left=2.6mm, right=2.6mm, top=1.9mm, bottom=1.9mm,
+  before skip=0.55\baselineskip, after skip=0.55\baselineskip,
+  parbox=false, width=\mnw}}
+
+% \newshadebox{name}{colour}{default label}   -> soft filled panel
+\newcommand{\newshadebox}[3]{%
+  \newtcolorbox{#1}[1][#3]{mn@base, colback=#2!7!white, colframe=#2!7!white,
+    before upper={\ifblank{##1}{}{{\bfseries\color{#2}##1}\par\nobreak}}}}
+% \newoutlinebox{name}{colour}{default label} -> outlined panel
+\newcommand{\newoutlinebox}[3]{%
+  \newtcolorbox{#1}[1][#3]{mn@base, colback=white, colframe=#2, boxrule=0.7pt,
+    before upper={\ifblank{##1}{}{{\bfseries\color{#2}##1}\par\nobreak}}}}
+
+\newshadebox{ex}{mnteal}{Example}
+\newshadebox{shade}{mngray}{}
+\newshadebox{idea}{mnamber}{Key idea}
+\newoutlinebox{outline}{mnaccent}{}
+\newoutlinebox{defn}{mnviolet}{Definition}
+\newoutlinebox{warn}{mnred}{Careful}
+
+\newtcolorbox{quo}[1][]{mn@base, colback=white, colframe=white, boxrule=0pt,
+  left=4.5mm, borderline west={2pt}{0pt}{mngray!70},
+  before upper={\itshape\color{mnink!85}\ifblank{#1}{}{{\bfseries\upshape
+    \color{mngray}#1}\par\nobreak}}}
+
+\endinput
