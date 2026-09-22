@@ -52,10 +52,12 @@ dot-grid paper.
 
 ## Two things worth knowing
 
-- **Fonts.** Text is Fira Sans. Math is `newtxsf` (a sans math font) under
-  `pdflatex`, and Lete Sans Math under `lualatex`/`xelatex`. The package
-  detects the engine and picks for you, so either works. `pdflatex` is the one
-  to use unless you have a reason not to.
+- **Fonts.** Text is XCharter (Bitstream Charter). Math is the matching
+  Charter math: `newtxmath[charter]` under `pdflatex`, and `XCharter-Math`
+  under `lualatex`/`xelatex`. The package detects the engine and picks for
+  you, so either works. `pdflatex` is the one to use unless you have a reason
+  not to. Fira Sans and Fira Mono are still there as `\sffamily` and
+  `\ttfamily`.
 - **Colours** are defined in one block near the top of `messynotes.sty`
   (`mnblue`, `mnteal`, `mnred`, `mnamber`, `mnviolet`, `mngray`). Change the
   hex values there and the whole document follows, because every heading and

@@ -22,29 +22,29 @@
 \ProcessOptions\relax
 
 % ---------------------------------------------------------------- fonts
-% Fira Sans everywhere.  Math is Fira Math under lualatex/xelatex and
-% newtxsf (a sans math font) under pdflatex, so either engine works.
+% XCharter (Bitstream Charter) for text -- a sturdy, high-x-height serif that
+% is emphatically not Computer Modern.  Math is the matching Charter math:
+% newtxmath[charter] under pdflatex, XCharter-Math under lualatex/xelatex.
+% Fira Sans and Fira Mono stay on as \sffamily and \ttfamily.
 \RequirePackage{iftex}
 \ifPDFTeX
   \RequirePackage[T1]{fontenc}
   \RequirePackage[utf8]{inputenc}
-  \RequirePackage{newtxsf}
-  \RequirePackage[sfdefault,lining]{FiraSans}
+  \RequirePackage[lining]{XCharter}
+  \RequirePackage[charter,vvarbb,scaled=1.02]{newtxmath}
+  \RequirePackage[lining]{FiraSans}
   \RequirePackage[scaled=0.85]{FiraMono}
 \else
   \RequirePackage{fontspec}
   \RequirePackage{unicode-math}
   \defaultfontfeatures{Extension=.otf,Numbers=Lining}
-  \setmainfont{FiraSans}[UprightFont=*-Regular,ItalicFont=*-Italic,
-      BoldFont=*-SemiBold,BoldItalicFont=*-SemiBoldItalic]
+  \setmainfont{XCharter}[UprightFont=*-Roman,ItalicFont=*-Italic,
+      BoldFont=*-Bold,BoldItalicFont=*-BoldItalic]
   \setsansfont{FiraSans}[UprightFont=*-Regular,ItalicFont=*-Italic,
-      BoldFont=*-SemiBold,BoldItalicFont=*-SemiBoldItalic]
+      BoldFont=*-SemiBold,BoldItalicFont=*-SemiBoldItalic,Scale=0.94]
   \setmonofont{FiraMono}[UprightFont=*-Regular,ItalicFont=*-Oblique,
       BoldFont=*-Bold,Scale=0.85]
-  % Lete Sans Math: a sans math font with complete symbol coverage.
-  % (Fira Math pairs better visually but is missing \bigwedge, \bigcup,
-  %  \vdash, \preceq, ... which you will hit in real notes.)
-  \setmathfont{LeteSansMath.otf}[Scale=0.93]
+  \setmathfont{XCharter-Math.otf}
 \fi
 
 % ---------------------------------------------------------------- packages
